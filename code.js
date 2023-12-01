@@ -1,15 +1,3 @@
-console.log("JavaScript code is running!!")
-
-const processedData = (data) => {
-    const groups = data.trim().split('\n\n');
-    const numbersGroups = groups.map(group => 
-        group.split('\n').map(line => 
-            line.trim().split(/\s+/).map(Number)
-        )
-    )
-    return numbersGroups;
-};
-
 const fetchData = async () => {
     try{
         const response = await fetch("http://localhost:4000/fetch-advent-data")
@@ -24,12 +12,26 @@ const fetchData = async () => {
 
 const run = async () => {
     const data = await fetchData();
-    if(data){
-        const dataGroups = processedData(data);
-        console.log(dataGroups);
-        //Add challenge code here
-
-    }
+    // Challenge code below:
+    
+    calculations = data.trim().split('\n');
+    let nums = calculations.map(calc => {
+        let firstNum = null
+        let lastNum = null
+        for(let i=0; i <= calc.length; i++){
+            if(calc[i] >= '1' && calc[i] <= '9' && !firstNum) firstNum=calc[i]
+            if(calc[calc.length - i] >= '0' && calc[calc.length - i] <= '9' && !lastNum) lastNum = calc[calc.length - i]
+        }
+        const number = parseInt(`${firstNum}${lastNum}`) 
+        return number
+    })
+    const total = nums.reduce((acc, val) =>
+        acc+val
+    , 0
+    );
+    console.log(total)
+    return total
 }
+
 
 run();
