@@ -6,7 +6,7 @@ import cors from "cors"
 
 const app = express()
 const PORT = 4000;
-const url = "https://adventofcode.com/2023/day/2/input"
+const url = "https://adventofcode.com/2023/day/3/input"
 app.use(cors())
 
 app.get('/fetch-advent-data', async (req, res) => {
@@ -17,6 +17,7 @@ app.get('/fetch-advent-data', async (req, res) => {
             }
         });
         const data = await response.text();
+        console.log("data sent")
         res.send(data)
     }catch(error){
         res.status(500).send(`An error occured fetching data. error:${error}`)
