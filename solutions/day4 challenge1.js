@@ -15,21 +15,20 @@ const run = async () => {
     // Challenge code below:
     const cards = data.trim().split('\n')
     const cardPoints = cards.map(card => {
-        const match = card.match(/Card\s*(\d+)/)
-        const id = match ? parseInt(match[1], 10) : null
+        // const match = card.match(/Card\s*(\d+)/)
+        // const id = match ? parseInt(match[1], 10) : null
         const parts = card.split("|");
         const winningNums = parts[0].split(":")[1].match(/\d+/g).map(Number)
         const myNums = parts[1].match(/\d+/g).map(Number)
         const matchingNums = myNums.filter(num => winningNums.includes(num))
         const points = matchingNums.length > 0 ? 2**(matchingNums.length - 1) : 0
-
         console.log(card)
         console.log(winningNums)
         console.log(myNums)
         console.log(matchingNums)
         console.log(matchingNums.length)
         console.log(points)
-        return {id, points}
+        return points
     }) 
     
     
