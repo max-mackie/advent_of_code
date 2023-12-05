@@ -11,103 +11,43 @@ const fetchData = async () => {
 };
 
 const run = async () => {
-    // Challenge code below:
-    const splitArray = (inputArray, delimiter) => {
-        let result = []
-        let currentSegment = []
-        inputArray.forEach( element => {
-            if(element === delimiter){
-                if(currentSegment.length){
-                    result.push(currentSegment)
-                    currentSegment = []
-                }
-            }else{
-                currentSegment.push(element)
-            }
-        });
-        if(currentSegment.length){
-            result.push(currentSegment)
-        }
-        return result
-    }
-
     const data = await fetchData();
-    const mapData = data.trim().split('\n')
-    const mapsRanges = splitArray(mapData, "")
 
-    let seeds = mapsRanges.shift()[0].match(/\d+/g).map(Number)
-    let mapObj = {};
-    for(let range of mapsRanges){
-        const name = range.shift()
-        let map = range.map(row => {
-            return row.match(/\d+/g).map(Number)
+    let lists = data.split(/[\n]*[a-z- ]*:[ ]*/g) // removes the text and splits data into different array
+    lists = lists.filter((l) => l) //remove falsy values from lists
+    lists = lists.map((l) => {
+        return l.trim().split(/[\n]+/g).map((n) => {
+            return n.split(/[\n ]/).map((m) => { //splits each line by its spaces (the new line part may be irelavant)
+                return parseInt(m, 10)
+            })
         })
-        mapObj[name] = map
-    }
-    let locations = []
-
-    
-    seeds.forEach(seed => {
-        let soil
-        let fertilizer
-        let water
-        let light
-        let temperature
-        let humidity
-        let location
-        for(let row of mapObj['seed-to-soil map:']){     
-            if(seed >= row[1] && seed <= (row[1] + row[2])){
-                soil = seed + (row[0] - row[1])
-            }
-        }
-        if(!soil) soil = seed
-
-        for(let row of mapObj['soil-to-fertilizer map:']){
-            if(soil >= row[1] && soil <= (row[1] + row[2])){
-                fertilizer = soil + (row[0] - row[1])
-            }
-        }
-        if(!fertilizer) fertilizer = soil
-
-        for(let row of mapObj['fertilizer-to-water map:']){
-            if(fertilizer >= row[1] && fertilizer <= (row[1] + row[2])){
-                water = fertilizer + (row[0] - row[1])
-            }
-        }
-        if(!water) water = fertilizer
-        
-        for(let row of mapObj['water-to-light map:']){
-            if(water >= row[1] && water <= (row[1] + row[2])){
-                light = water + (row[0] - row[1])
-            }
-        }
-        if(!light) light = water
-
-        for(let row of mapObj['light-to-temperature map:']){
-            if(light >= row[1] && light <= (row[1] + row[2])){
-                temperature = light + (row[0] - row[1])
-            }
-        }
-        if(!temperature) temperature = light
-        
-        for(let row of mapObj['temperature-to-humidity map:']){
-            if(temperature >= row[1] && temperature <= (row[1] + row[2])){
-                humidity = temperature + (row[0] - row[1])
-            }
-        }
-        if(!humidity) humidity = temperature
-        
-        for(let row of mapObj['humidity-to-location map:']){
-            if(humidity >= row[1] && humidity <= (row[1] + row[2])){
-                location = humidity + (row[0] - row[1])
-            }
-        }
-        if(!location) location = humidity
-        locations.push(location) 
     })
-
-    console.log(Math.min(...locations))
-    return 
+    
+    //finding the maximum possible value that can be returned my the last list of mapping so we can use this as a stoping point in the next for loop
+    const maxMap = lists[lists.length-1].reduce((max, map) => { 
+            return Math.max(max, map[0] + map[2]) //Look through each mapping to find its highest possible mapping
+        }, 0
+    )
+    console.log(lists[0][0])
+    let lowestPost;
+    //works backwards through each list identifying the lowest possible number which could be returned by a mapping in that list
+    for(let pos = 0; pos < maxMap && isNaN(lowestPost); pos++){ //increasing pos while its less than the maxMap and it hasent been set yet
+        let val = pos;
+        for(let i = lists.length -1; i>0; i--){ //working our way backwards through the lists of maps
+            const map = lists[i].find(m => {
+                return val >= m[0] && val < m[0] + m[2] //find the mapping in the list where the value in the range of the mapping
+            })
+            map && (val = val - map[0] + map[1]) //if a map is found then set val to its value plus the difference between the maps start and finish aka how the mapping translates the value
+        }
+        
+        // once a value passes the tests above we now need to check that it is a seed
+        for(let i = 0; i < lists[0][0].length && isNaN(lowestPost); i +=2){
+            if(val >= lists[0][0][i] && val < lists[0][0][i] + lists[0][0][i+1]){
+                lowestPost  = pos
+            }
+        }
+    }
+    console.log(lowestPost)
 }
 
 
