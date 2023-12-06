@@ -10,60 +10,83 @@ const fetchData = async () => {
     }
 };
 
-const run = async () => {
-    const data = await fetchData();
-    const newtonRaphsonMethod = (t,d, initialGuess = 1) => {
-        const tolerance = 0.001
-        let s = initialGuess
-
-        for(let i=0; i<100; i++){
-            let f = s * (t-s) -d; //f(s)
-            let fPrime = t-2*s    //f'(s)
-            
-            console.log(Math.abs(f))
-            if(Math.abs(f) < tolerance){
-                return s;
-            }
-            console.log(f, fPrime)
-            s = s-f / fPrime
-        }
-    }
-    const findMostCommonNumbers = (arr) => {
-        const frequencyMap = {};
-        arr.forEach(num => {
-            frequencyMap[num] = (frequencyMap[num]|| 0) + 1;
-        });
-
-        const sortedByFrequency = Object.entries(frequencyMap).sort((a,b)=> b[1] - a[1])
-        const mostCommon = sortedByFrequency.slice(0,2).map(el => parseInt(el[0]))
-        return mostCommon
-    }
-    let time = 38677673
-    let distance = 234102711571236
-    console.log(Math.ceil(newtonRaphsonMethod(time, distance, 31166259)))
-
-
-    
-    // const roots = []
-    // let root = []
-    // console.log(time, distance)
-    // for(let j = 0; j<=time; j+=500000){
-    //     root.push(Math.ceil(newtonRaphsonMethod(time, distance, j)))
-    // }
-    // console.log(root)
-    // roots.push(findMostCommonNumbers(root))
-    // console.log(roots.map(s=>s[1]-s[0]).reduce((total, val) => total*val, 1))
-
+function isNum(char){
+    return char.match(/[0-9]/);
 }
 
-//
-// Using the Bisection method with a different range,
-// This second solution was found by considering the symmetric nature of the quadratic equation. Given one root 
-// �
-// s, the other root is likely around 
-// �
-// −
-// �
-// t−s, which is a characteristic of quadratic equations. ​
+const part1 = async () => {
+    const data = await fetchData();
+    // Process data to get array of time & distance objects
+    let result = 1;
+    const lines = data.split('\n')
+    const times = lines[0].split(' ').map(Number).filter(Boolean)
+    const distances = lines[1].split(' ').map(Number).filter(Boolean)
+    let currentWRs = [];
+    for(let i=0; i<times.length; i++){
+        currentWRs.push({time:times[i], distance: distances[i]});
+    }
 
-run();
+    for(let i=0; i<currentWRs.length; i++){
+        const time = currentWRs[i].time;
+        const distance = currentWRs[i].distance;
+
+        const possibleRuns = [];
+        for(let j=0; j<time; j++){
+            let posButton = j;
+            let posBoat = posButton * (time - posButton);
+            possibleRuns.push({time: time, distance: posBoat});
+        }
+
+        let runsThatBeatWR = 0;
+        for(const run of possibleRuns){
+            if(run.distance > distance){
+                runsThatBeatWR++;
+            }
+        }
+
+        result *= runsThatBeatWR;
+    }
+    console.log(result)
+}
+
+const part2 = async () => {
+    let result = 0;
+    const data = await fetchData();
+    const lines = data.split('\n');
+    const times = lines[0].split('');
+    const distances = lines[1].split('')
+    let mainTime = '';
+    let mainDistance = '';
+    for( let i=0; i<times.length; i++){
+        if(isNum(times[i])) mainTime += times[i]
+    }
+    for( let i=0; i<distances.length; i++){
+        if(isNum(distances[i])) mainDistance += distances[i]
+    }
+
+    mainTime = Number(mainTime);
+    mainDistance = Number(mainDistance)
+
+    let currentWRs = [];
+    currentWRs.push({time: mainTime, distance: mainDistance});
+
+    let runsThatBeatWR = 0;
+    for( let i=0; i<currentWRs.length; i++){
+        const time = currentWRs[i].time;
+        const distance = currentWRs[i].distance;
+
+        const possibleRuns = [];
+        for(let j=0; j<time; j++){
+            let posButton = j
+            let posBoat = posButton * (time - posButton)
+            if(posBoat > distance){
+                runsThatBeatWR++;
+            }
+        }
+        result += runsThatBeatWR;
+    }
+    console.log(result)
+}
+
+part1();
+part2();
