@@ -34,14 +34,14 @@ async function  run () {
     console.log(difArrs)
 
     for(let difs of difArrs){
-        difs[difs.length-1].push(0)
+        difs[difs.length-1].unshift(0)
         for(let i=difs.length-2; i>=0; i--){
-            difs[i].push(difs[i][difs[i].length - 1] + difs[i+1][difs[i+1].length-1])
+            difs[i].unshift(difs[i][0] - difs[i+1][0])
         }
         console.log(difs)
     }
     console.log(difArrs.reduce((total, curr) => {
-        return total + curr[0][curr[0].length-1]
+        return total + curr[0][0]
     },0))
 
 }
