@@ -82,4 +82,3 @@ function dfsIterative(matrix, startRow, startCol, visited, path) {
   }
   
   run();
-  
