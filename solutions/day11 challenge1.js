@@ -63,12 +63,12 @@ async function run1(data) {
             total += difference
             for(let x of expRows){
                 if((x >= galaxies[i][0] && x <= galaxies[j][0]) || (x >= galaxies[j][0] && x <= galaxies[i][0])){
-                    total += 999999
+                    total += 1
                 }
             }
             for(let y of expCols){
                 if((y >= galaxies[i][1] && y <= galaxies[j][1]) || (y >= galaxies[j][1] && y <= galaxies[i][1])){
-                    total += 999999
+                    total += 1
                 } 
             }
         }
