@@ -63,4 +63,5 @@ const test1 =  "???.### 1,1,3\n.??..??...?##. 1,1,3\n?#?#?#?#?#?#?#? 1,3,1,6\n??
 // console.log("test1:")
 // run(test1, 1)
 // run(test1)
-run(await fetchData(), 1)
+
+run(await fetchData(), 5)
