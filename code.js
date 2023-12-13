@@ -1,3 +1,41 @@
+function findMatch(string, groups, total = 0) {
+    if (groups.length === 0) return total;
+    if (!string.includes("?")) return total;
+
+    let group = groups.shift();
+    let regex = new RegExp("[\\?#]{" + group + "}");
+    let modifiedStr = string.replace(regex, (match) => {
+        if (match) {
+            total += group; // Increase total by the length of the replaced group
+            return '#'.repeat(group);
+        } else {
+            return match;
+        }
+    });
+
+    // If no replacement occurred, replace the first '?' with '.'
+    if (modifiedStr === string) {
+        modifiedStr = string.replace("?", ".");
+        groups.unshift(group); // Put the group size back for retry
+    }
+
+    // Recursive call to process the remaining groups
+    return findMatch(modifiedStr, groups, total);
+}
+
+
+function run(data) {
+    const lines = data.split('\n').filter(Boolean).map(l => l.split(" ")).map(l => [l[0], l[1].split(',').map(Number)])
+    console.log(lines)
+    lines.forEach(l => {
+        let groups = l[1]
+        let string = l[0]
+        let total = findMatch(string, groups)
+        console.log(total)
+    })
+    return
+}
+
 const fetchData = async () => {
     try{
         const response = await fetch("http://localhost:4000/fetch-advent-data")
@@ -10,73 +48,7 @@ const fetchData = async () => {
     }
 };
 
-function expandUniverse(data){
-    const lines = data.split('\n').filter(Boolean).map(l => l.split(''))
-    let expRows = []
-    lines.forEach((row, index) => {
-        if(row.every((e) => {
-            return e === "."
-        })){
-            expRows.push(index)            
-        }
-    })
-    let columns = Array.from({length: lines[0].length}, () => [])
-    lines.forEach(l => {
-        for(let i=0; i<l.length; i++){
-            columns[i].push(l[i])
-        }
-    })
-
-    let expCols = []
-    columns.forEach((col, index) => {
-        if(col.every((e) => {
-            return e === '.'
-        })){
-            expCols.push(index)
-        }
-    })
-    
-    return [expRows, expCols]
-}
-
-async function run1(data) {
-    // const data = await fetchData();
-
-    const expUni = data.split('\n').filter(Boolean).map(x => x.split(''))
-    const [expRows, expCols] = expandUniverse(data)
-    //number each gallaxy and record its position coord {num: [x,y]}
-    //for each number more than the current number calc shortest path
-    //shortest path = difference in x coord + difference in y coord
-    //shortest path = abs(x1-x2) + abs(y1-y2)
-    
-    let galaxies = []
-    for(let x=0; x<expUni.length; x++){
-        for(let y=0; y<expUni[0].length; y++){
-            let element = expUni[x][y];
-            if(element === "#") galaxies.push([x,y])
-        }
-    }
-    let total = 0
-    for(let i=0; i<galaxies.length-1; i++){
-        for(let j=i+1; j<galaxies.length; j++){
-            let difference = Math.abs(galaxies[i][0] - (galaxies[j][0])) + Math.abs(galaxies[i][1] - (galaxies[j][1]))
-            total += difference
-            for(let x of expRows){
-                if((x >= galaxies[i][0] && x <= galaxies[j][0]) || (x >= galaxies[j][0] && x <= galaxies[i][0])){
-                    total += 999999
-                }
-            }
-            for(let y of expCols){
-                if((y >= galaxies[i][1] && y <= galaxies[j][1]) || (y >= galaxies[j][1] && y <= galaxies[i][1])){
-                    total += 999999
-                } 
-            }
-        }
-    }
-    console.log(total)
-    return
-}
-
-// const test1 =  "...#......\n.......#..\n#.........\n..........\n......#...\n.#........\n.........#\n..........\n.......#..\n#...#....."
-// run1(test1)
-run1(await fetchData())
+const test1 =  "???.### 1,1,3\n.??..??...?##. 1,1,3\n?#?#?#?#?#?#?#? 1,3,1,6\n????.#...#... 4,1,1\n????.######..#####. 1,6,5\n?###???????? 3,2,1"
+console.log("test1:")
+run(test1)
+// run(await fetchData())
