@@ -6,7 +6,7 @@ import cors from "cors"
 
 const app = express()
 const PORT = 4000;
-const url = "https://adventofcode.com/2023/day/13/input"
+const url = "https://adventofcode.com/2023/day/14/input"
 app.use(cors())
 
 app.get('/fetch-advent-data', async (req, res) => {
