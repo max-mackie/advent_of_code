@@ -1,54 +1,61 @@
-function transverseMatrix(matrix){
-  let transverse = Array.from({length: matrix.length}, () => [])
-  matrix.forEach(line => {
-    for(let i=0; i<line.length; i++){
-      transverse[i].push(line[i])
+function run(data){
+  const platform = data.split('\n').filter(Boolean).map(line => line.split(''))
+  
+  const move = (platform, x, y, nx, ny) => {
+    const c = platform[y][x];
+    const nc = platform[ny] ? platform[ny][nx] : undefined;
+    if (c === 'O' && nc === '.') {
+      platform[ny][nx] = c;
+      platform[y][x] = '.';
+      return 1;
     }
-  })
-  return transverse
-}
-
-function letThemRoll(matrix){
-  let rolled = matrix.map(column => {
-    let lastBlockage = -1;
-    for(let i=0; i<column.length; i++){
-      if(column[i] === '.') continue
-      if(column[i] === '#') lastBlockage = i
-      if(column[i] === 'O'){
-        if(i === lastBlockage + 1){
-          lastBlockage++
-          continue
-        }else{
-          column[lastBlockage+1] = column[i]
-          column[i] = "."
-          lastBlockage++
+    return 0;
+  }
+  
+  const NORTH = { x: 0, y: -1, start: _ => 0, next: v => v + 1 };
+  const WEST = { x: -1, y: 0, start: _ => 0, next: v => v + 1 };
+  const SOUTH = { x: 0, y: 1, start: p => p.length - 1, next: v => v - 1 };
+  const EAST = { x: 1, y: 0, start: p => p.length - 1, next: v => v - 1 };
+  
+  const tilt = (platform, dir) => {
+    let moves = 1;
+    while (moves) {
+      moves = 0;
+      for (let y = dir.start(platform); y >= 0 && y < platform.length; y = dir.next(y)) {
+        for (let x = dir.start(platform); x >= 0 && x < platform[y].length; x = dir.next(x)) {
+          moves += move(platform, x, y, x + dir.x, y + dir.y);
         }
       }
-    }
-    return column
-  })
-  return rolled
-}
-
-function run(data){
-  let matrix = data.split('\n').filter(Boolean).map(l => l.split(''))
+    };
+  };
   
-  for(let i=0; i<1; i++){
-    console.log(i)
-    let transverse = transverseMatrix(matrix)
-    matrix = letThemRoll(transverse)
+  const load = (platform) => 
+    platform.map((line, y) => line.map(c => c !== 'O' ? 0 : platform.length - y) // calculate distance from bottom
+        .reduce((a, b) => a + b, 0) // sum all distances for line
+      ).reduce((a, b) => a + b, 0); // sum all lines
+
+  const cycle = (platform) => {
+    const maps = new Map(); // detect cycles
+    for(let i=0; i< 1000_000_000; i++){
+      tilt(platform, NORTH);
+      tilt(platform, WEST);
+      tilt(platform, SOUTH);
+      tilt(platform, EAST);
+      const mapId = platform.map(line => line.join('')).join('\n');
+      if(maps.get(mapId)){
+        const cycleLength = i - maps.get(mapId);
+        const remaining = 1000_000_000 - i;
+        console.log(i)
+        i += Math.floor(remaining/cycleLength) * cycleLength
+        console.log(i)
+        maps.clear();
+      }
+      maps.set(mapId, i)
+    }
   }
-
-
-
-  const total = matrix.reduce((sum, column) => {
-    const columnTotal = column.reduce((columnSum, element, rowIndex) => {
-      if(element === 'O') return columnSum + 1 * (column.length - rowIndex)
-      return columnSum
-    }, 0)
-    return sum + columnTotal
-  },0)
-  console.log(total)
+  
+  cycle(platform)
+  console.log(`part2: ${load(platform)}`);
 }
 
 const fetchData = async () => {
@@ -63,8 +70,6 @@ const fetchData = async () => {
     }
 };
 
-// const test1 =  "O....#....\nO.OO#....#\n.....##...\nOO.#O....O\n.O.....O#.\nO.#..O.#.#\n..O..#O..O\n.......O..\n#....###..\n#OO..#....";
 // console.log("test1:")
-// run(test1)
-
+// run(test)
 run(await fetchData())
