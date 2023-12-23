@@ -1,88 +1,84 @@
-const pathLight = (matrix, pr, pc, r, c, visited) => {
-  if (r < 0 || r >= matrix.length || c < 0 || c >= matrix[0].length) {
-    return;
+class PriorityQueue {
+  constructor() {
+    this.nodes = [];
   }
-  let pathKey = `${pr},${pc}:${r},${c}`;
-  if (visited?.[pathKey]) {
-    return;
-  }
-  visited[pathKey] = true;
 
-  let direction = [r - pr, c - pc];
-  switch (matrix[r][c]) {
-    case "|":
-      pathLight(matrix, r, c, r + 1, c, visited);
-      pathLight(matrix, r, c, r - 1, c, visited);
-      break;
-    case "-":
-      pathLight(matrix, r, c, r, c + 1, visited);
-      pathLight(matrix, r, c, r, c - 1, visited);
-      break;
-    case "/":
-      if (direction.join(",") === "0,1") {
-        pathLight(matrix, r, c, r - 1, c, visited);
-      } else if (direction.join(",") === "0,-1") {
-        pathLight(matrix, r, c, r + 1, c, visited);
-      } else if (direction.join(",") === "1,0") {
-        pathLight(matrix, r, c, r, c - 1, visited);
-      } else if (direction.join(",") === "-1,0") {
-        pathLight(matrix, r, c, r, c + 1, visited);
-      }
-      break;
-    case "\\":
-      if (direction.join(",") === "0,1") {
-        pathLight(matrix, r, c, r + 1, c, visited);
-      } else if (direction.join(",") === "0,-1") {
-        pathLight(matrix, r, c, r - 1, c, visited);
-      } else if (direction.join(",") === "1,0") {
-        pathLight(matrix, r, c, r, c + 1, visited);
-      } else if (direction.join(",") === "-1,0") {
-        pathLight(matrix, r, c, r, c - 1, visited);
-      }
-      break;
-    default:
-      pathLight(matrix, r, c, r + direction[0], c + direction[1], visited);
+  enqueue(priority, key) {
+    this.nodes.push({ priority, key });
+    this.sort();
   }
-};
 
-const updateMostVisited = (data, pr, pc, r, c, mostVisited) => {
-  let visited = {};
-  pathLight(data, pr, pc, r, c, visited);
-  const cellsVisited = [
-    ...new Set(Object.keys(visited).map((key) => key.split(":")[1])),
-  ].length;
-  console.log(cellsVisited, mostVisited);
-  return Math.max(cellsVisited, mostVisited);
-};
+  dequeue() {
+    return this.nodes.shift();
+  }
+
+  sort() {
+    this.nodes.sort((a, b) => a.priority - b.priority);
+  }
+
+  isEmpty() {
+    return !this.nodes.length;
+  }
+}
+
+function getNeighbors(node, maxRow, maxCol) {
+  let [x, y] = node;
+  let neighbors = [];
+
+  let directions = [
+    [-1, 0],
+    [0, 1],
+    [1, 0],
+    [0, -1],
+  ];
+
+  for (let [dx, dy] of directions) {
+    let newX = x + dx;
+    let newY = y + dy;
+
+    if (newX >= 0 && newX < maxRow && newY >= 0 && newY < maxCol) {
+      neighbors.push([newX, newY]);
+    }
+  }
+  return neighbors;
+}
+
+function dijkstra(grid) {
+  let maxRow = grid.length;
+  let maxCol = grid[0].length;
+  let distances = Array.from({ length: maxRow }, () =>
+    Array(maxCol).fill(Infinity)
+  );
+  let pq = new PriorityQueue();
+
+  let start = [0, 0];
+  distances[0][0] = grid[0][0];
+  pq.enqueue(grid[0][0], start);
+
+  while (!pq.isEmpty()) {
+    let currentNode = pq.dequeue();
+    let [x, y] = currentNode.key;
+
+    let neighbors = getNeighbors([x, y], maxRow, maxCol);
+    for (let [nx, ny] of neighbors) {
+      let newDist = distances[x][y] + grid[nx][ny];
+
+      if (newDist < distances[nx][ny]) {
+        distances[nx][ny] = newDist;
+        pq.enqueue(newDist, [nx, ny]);
+      }
+    }
+  }
+  return distances;
+}
 
 const run = (data) => {
   data = data
     .split("\n")
     .filter(Boolean)
-    .map((line) => line.split(""));
-  let mostVisited = 0;
-  for (let r = 0; r < data.length; r++) {
-    mostVisited = updateMostVisited(data, r, -1, r, 0, mostVisited);
-    mostVisited = updateMostVisited(
-      data,
-      r,
-      data[0].length - 1,
-      r,
-      data[0].length - 2,
-      mostVisited
-    );
-    if (r === 0) {
-      for (let c = 0; c < data[0].length; c++) {
-        mostVisited = updateMostVisited(data, r, c, r + 1, c, mostVisited);
-      }
-    }
-    if (r === data.length - 1) {
-      for (let c = 0; c < data[0].length; c++) {
-        mostVisited = updateMostVisited(data, r, c, r - 1, c, mostVisited);
-      }
-    }
-  }
-  console.log(mostVisited);
+    .map((row) => row.split("").map(Number));
+  const distances = dijkstra(data);
+  console.log(distances);
   return;
 };
 
@@ -98,16 +94,13 @@ const fetchData = async () => {
   }
 };
 
-// const test1 = 'rn=1'
-// console.log("test1:")
-// run(test1)
 const main = async () => {
   try {
-    // let test =
-    //   ".|...\\....\n|.-.\\.....\n.....|-...\n........|.\n..........\n.........\\\n..../.\\\\..\n.-.-/..|..\n.|....-|.\\\n..//.|....";
-    // console.log(test);
-    // run(test);
-    run(await fetchData());
+    const test =
+      "2413432311323\n3215453535623\n3255245654254\n3446585845452\n4546657867536\n1438598798454\n4457876987766\n3637877979653\n4654967986887\n4564679986453\n1224686865563\n2546548887735\n4322674655533";
+    console.log("test:");
+    run(test);
+    // run(await fetchData());
   } catch (error) {
     console.error("Error in the main funciton:", error);
   }
