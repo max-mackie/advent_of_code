@@ -3,8 +3,8 @@ class PriorityQueue {
     this.nodes = [];
   }
 
-  enqueue(priority, key) {
-    this.nodes.push({ priority, key });
+  enqueue(priority, key, currDir, steps) {
+    this.nodes.push({ priority, key, currDir, steps });
     this.sort();
   }
 
@@ -21,23 +21,37 @@ class PriorityQueue {
   }
 }
 
-function getNeighbors(node, maxRow, maxCol) {
+function getNeighbors(node, maxRow, maxCol, currDir, steps) {
   let [x, y] = node;
   let neighbors = [];
 
   let directions = [
-    [-1, 0],
-    [0, 1],
-    [1, 0],
-    [0, -1],
+    [-1, 0], //up    (0)
+    [0, 1], //right (1)
+    [1, 0], //down  (2)
+    [0, -1], //left  (3)
   ];
 
-  for (let [dx, dy] of directions) {
+  for (let i = 0; i < directions.length; i++) {
+    let direction = directions[i];
+    if (
+      (currDir === 0 && i === 2) ||
+      (currDir === 1 && i === 3) ||
+      (currDir === 2 && i === 0) ||
+      (currDir === 3 && i === 1)
+    ) {
+      continue;
+    }
+    if (currDir === i && steps >= 3) {
+      continue;
+    }
+
+    let [dx, dy] = direction;
     let newX = x + dx;
     let newY = y + dy;
 
     if (newX >= 0 && newX < maxRow && newY >= 0 && newY < maxCol) {
-      neighbors.push([newX, newY]);
+      neighbors.push([[newX, newY], i, currDir === i ? steps + 1 : 0]);
     }
   }
   return neighbors;
@@ -53,19 +67,24 @@ function dijkstra(grid) {
 
   let start = [0, 0];
   distances[0][0] = grid[0][0];
-  pq.enqueue(grid[0][0], start);
+  pq.enqueue(grid[0][0], start, 1, 0);
 
   while (!pq.isEmpty()) {
     let currentNode = pq.dequeue();
     let [x, y] = currentNode.key;
+    let direction = currentNode.direction;
+    let steps = currentNode.steps;
 
-    let neighbors = getNeighbors([x, y], maxRow, maxCol);
-    for (let [nx, ny] of neighbors) {
+    let neighbors = getNeighbors([x, y], maxRow, maxCol, direction, steps);
+    for (let neighbor of neighbors) {
+      let [nx, ny] = neighbor[0];
+      let direction = neighbor[1];
+      let steps = neighbor[2];
       let newDist = distances[x][y] + grid[nx][ny];
 
       if (newDist < distances[nx][ny]) {
         distances[nx][ny] = newDist;
-        pq.enqueue(newDist, [nx, ny]);
+        pq.enqueue(newDist, [nx, ny], direction, steps);
       }
     }
   }
