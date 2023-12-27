@@ -6,23 +6,42 @@ const DIR = {
 };
 
 const run = (data) => {
-  data = data.split("\n").filter(Boolean);
-  let r = 0;
-  let c = 0;
-  let area = 1;
+  data = data
+    .split("\n")
+    .filter(Boolean)
+    .map((row) => row.split(" "));
   const dug = [[0, 0]];
   let [maxR, maxC] = [0, 0];
   for (let i = 0; i < data.length; i++) {
-    let [dir, steps, color] = data[i].split(/[ ()]+/g);
-    dir = ["R", "D", "L", "U"][color.at(-1)];
-    steps = parseInt(color.slice(1, -1), 16);
+    const dir = data[i][0];
     const [dr, dc] = DIR[dir];
-    const r0 = r;
-    const c0 = c;
-    r += dr * steps;
-    c += dc * steps;
-    area += (r * c0 - r0 * c + steps) / 2;
+    const steps = +data[i][1];
+    for (let j = 0; j < steps; j++) {
+      const [r, c] = dug[dug.length - 1];
+      const nextR = r + dr;
+      const nextC = c + dc;
+      dug.push([nextR, nextC]);
+      maxR = Math.max(nextR, maxR);
+      maxC = Math.max(nextC, maxC);
+    }
   }
+  // dug.pop();
+
+  let area = 1;
+
+  // if(dug[0][0] !== dug[dug.length-1][0] || dug[0][1] !== dug[dug.length -1][1]){
+  //   dug.push(dug[0])
+  // }
+
+  for (let i = 1; i < dug.length; i++) {
+    let r = dug[i][0];
+    let c = dug[i][1];
+    let pr = dug[i - 1][0];
+    let pc = dug[i - 1][1];
+
+    area += (pc * r - c * pr + 1) / 2;
+  }
+  area = Math.abs(area);
   console.log(area);
 };
 
