@@ -1,6 +1,7 @@
 const findNeighbors = (matrix, loc) => {
-  let width = matrix.length;
-  let height = matrix[0].length;
+  let width = matrix;
+  let height = matrix[0];
+  let border = 1;
   const dirs = [
     [-1, 0],
     [0, 1],
@@ -12,9 +13,22 @@ const findNeighbors = (matrix, loc) => {
   for (const dir of dirs) {
     let nr = r + dir[0];
     let nc = c + dir[1];
+    let mappedR =
+      ((nr % (width + border * 2)) + (width + border * 2)) %
+      (width + border * 2);
+    let mappedC =
+      ((nc % (height + border * 2)) + (height + border * 2)) %
+      (height + border * 2);
     let nextLoc;
-    if (nr >= 0 && nr <= width - 1 && nc >= 0 && nc <= height - 1) {
-      nextLoc = matrix[nr][nc];
+    if (
+      mappedR >= 0 &&
+      mappedR <= width - 1 &&
+      mappedC >= 0 &&
+      mappedC <= height - 1
+    ) {
+      nextLoc = ".";
+    } else {
+      nextLoc = matrix[mappedR][mappedC];
     }
     if (nextLoc === "." || nextLoc === "S") neighbors.push([nr, nc]);
   }
@@ -50,7 +64,7 @@ const run = (data) => {
     }
     processed.add(locKey);
   }
-  console.log(matrix, start, processed, visited.size);
+  console.log(matrix, start, visited, visited.size);
 };
 
 const fetchData = async () => {
@@ -69,7 +83,7 @@ const main = async () => {
   try {
     const test1 = `...........\n.....###.#.\n.###.##..#.\n..#.#...#..\n....#.#....\n.##..S####.\n.##..#...#.\n.......##..\n.##.#.####.\n.##..##.##.\n...........`;
     run(test1);
-    run(await fetchData());
+    // run(await fetchData());
   } catch (error) {
     console.error("Error in the main function:", error);
   }
